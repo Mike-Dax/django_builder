@@ -145,6 +145,23 @@
 </div>
 
 <div class="row">
+    <div class="col-md-6" id="schema_py">
+        <h4>{{ app_name()|lowercase }}/schema.py <small><i class="fa fa-star"></i> GraphQL</small></h4>
+
+        <div id="builder_graphql_schema" ui-ace="{
+              useWrapMode : true,
+              showGutter: false,
+              theme:'dawn',
+              mode: 'python',
+              onLoad: aceLoaded,
+              onChange: aceChanged
+            }">
+
+        </div>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-md-6" id="api_py">
         <h4>{{ app_name()|lowercase }}/api.py <small><i class="fa fa-star"></i> Django Rest Framework</small></h4>
 

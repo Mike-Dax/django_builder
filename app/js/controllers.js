@@ -52,6 +52,7 @@ angular.module('builder.controllers', ['LocalStorageModule'])
                 var forms = $scope.render_factory.render_forms_py(app_name, $scope.models);
                 var api = $scope.render_factory.render_django_rest_framework_api_py(app_name, $scope.models);
                 var serializers = $scope.render_factory.render_django_rest_framework_serializers_py(app_name, $scope.models);
+                var schema = $scope.render_factory.render_graphql_schema_py(app_name, $scope.models);
 
                 var templates = $scope.render_factory.render_templates_html(app_name, $scope.models);
 
@@ -86,6 +87,7 @@ angular.module('builder.controllers', ['LocalStorageModule'])
                 tarfile.append(root_folder+'/forms.py', forms);
                 tarfile.append(root_folder+'/api.py', api);
                 tarfile.append(root_folder+'/serializers.py', serializers);
+                tarfile.append(root_folder+'/schema.py', schema);
                 tarfile.append(root_folder+'/templates/base.html', $scope.render_factory.render_base_html(app_name, $scope.models));
 
                 jQuery.each(templates, function(i, template){
@@ -339,6 +341,8 @@ angular.module('builder.controllers', ['LocalStorageModule'])
                     _editor.setValue($scope.render_factory.render_django_rest_framework_api_py($scope.app_name(), $scope.models));
                 }else if(_id=="builder_django_rest_framework_serializers"){
                     _editor.setValue($scope.render_factory.render_django_rest_framework_serializers_py($scope.app_name(), $scope.models));
+                }else if(_id=="builder_graphql_schema"){
+                    _editor.setValue($scope.render_factory.render_graphql_schema_py($scope.app_name(), $scope.models));
                 }
                 _editor.session.selection.clearSelection();
             };

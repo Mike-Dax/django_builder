@@ -52,6 +52,7 @@ function ModelRenderFactory() {
             all_output+=_this.render_models_py(app_name, models);
             all_output+=_this.render_django_rest_framework_api_py(app_name, models);
             all_output+=_this.render_django_rest_framework_serializers_py(app_name, models);
+            all_output+=_this.render_graphql_schema_py(app_name, models);
             all_output+=_this.render_templates_html(app_name, models);
             return all_output;
         };
@@ -247,7 +248,47 @@ function ModelRenderFactory() {
 
             return serializers_py;
         };
+        _this.render_graphql_schema_py = function (app_name, models) {
+            var schema_py = 'from .models import '+_this.model_names(models, '').join(', ')+'\n';
+            schema_py += 'from graphene import AbstractType, Node, List, resolve_only_args, Int\n';
+            schema_py += 'from graphene_django.filter import DjangoFilterConnectionField\n';
+            schema_py += 'from graphene_django.types import DjangoObjectType\n';
+            schema_py += _this.new_lines(2);
 
+            jQuery.each(models, function(i, model){
+                schema_py += 'class ' + model.name + 'Node(DjangoObjectType):\n';
+                schema_py += '    oid = Int()\n';
+                schema_py += _this.new_lines(1);
+                schema_py += '    def resolve_oid(self, *_):\n';
+                schema_py += '        return self.id\n';
+                schema_py += _this.new_lines(1);
+                schema_py += '    class Meta:\n';
+                schema_py += '        model = ' + model.name + '\n';
+                schema_py += '        interfaces = (Node, )\n';
+                schema_py += '        filter_fields = ' + this.filter_fields() + '\n';
+
+                schema_py += _this.new_lines(1);
+            });
+
+            schema_py += _this.new_lines(1);
+            
+            schema_py += 'class Query(AbstractType):\n';
+
+            jQuery.each(models, function(i, model){
+                schema_py += '    ' + model.name.toLowerCase() + ' = Node.Field(' + model.name + 'Node)\n';
+                schema_py += '    all_' + model.name.toLowerCase() + 's = List(' + model.name + 'Node)\n';
+                schema_py += _this.new_lines(1);
+            });
+
+            jQuery.each(models, function(i, model){
+                schema_py += '    @resolve_only_args\n';
+                schema_py += '    def resolve_all_' + model.name.toLowerCase() + 's(self):\n';
+                schema_py += '        return ' + model.name + '.objects.all()\n';
+                schema_py += _this.new_lines(1);
+            });
+
+            return schema_py;
+        };
     };
 }
 function MessageServiceFactory() {
@@ -1012,6 +1053,13 @@ function ModelServiceFactory() {
                     return '[\'' + this.field_names().join('\', \'') + '\']'
                 }else{
                     return '';
+                }
+            };
+            this.filter_fields = function(){
+                if(this.field_names().length>0) {
+                    return '[\'' + this.field_names().join('\', \'') + '\', \'id\']'
+                }else{
+                    return '[id]';
                 }
             };
             this.admin_read_only_fields = function(){
